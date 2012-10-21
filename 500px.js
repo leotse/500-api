@@ -20,6 +20,8 @@ var AUTHORIZE_URL = BASE_URL + "/oauth/authorize?oauth_token=%s";
 var ACCESS_TOKEN_URL = BASE_URL + "/oauth/access_token";
 
 // user endpoints
+var USERS_URL = BASE_URL + "/users";
+
 // photo endpoints
 // blog endpoints
 // collection endpoints
@@ -95,7 +97,55 @@ fpx.getToken = function(req, res, callback) {
 }
 
 
+// method to retrieve current user information
+// assumes the oauth token and secret is already in session
+fpx.users = function(session, callback) {
+
+	var url = USERS_URL;
+	get(url, session, function(err, res) {
+		if(err) callback(err);
+		else callback(null, res.user);
+	});
+}
 
 
 // export
 module.exports = fpx;
+
+
+/////////////
+// Helpers //
+/////////////
+
+// simple helper to make oauth get request
+function get(url, session, callback) {
+
+	// make sure tokens are present
+	if(!session || !session.token || !session.secret) {
+		callback(new Error('user is not loggedin'));
+		return;
+	}
+
+	var token = session.token
+	,	secret = session.secret
+	,	url = USERS_URL
+	,	oauth = {
+			consumer_key: config.key,
+			consumer_secret: config.secret,
+			token: token,
+			token_secret: secret,
+		};
+
+	request({ url: url, oauth: oauth }, function(e, r, body) {
+		if(e) callback(e);
+		else if(r.statusCode !== 200) callback(new Error('status: ' + r.statusCode));
+		else {
+			try {
+				var json = JSON.parse(body);
+				callback(null, json);
+			} catch(ex) {
+				callback(new Error('unable to parse json response: ' + body));
+			}
+		}
+	});
+}

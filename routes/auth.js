@@ -37,23 +37,10 @@ auth.callback = function(req, res) {
 		if(err) helpers.sendError(res, err);
 		else {
 
-			// test the token with a user call
-			var url = 'https://api.500px.com/v1/users'
-			,	token = req.session.token
-			,	secret = req.session.secret
-			,	oauth = {
-					consumer_key: config.key,
-					consumer_secret: config.secret,
-					token: token,
-					token_secret: secret,
-				};
-
-			request.get({ url: url, oauth: oauth, json: true }, function(e, r, body) {
-				if(helpers.canContinue(res, e, r)) {
-
-					// finally no errors! just send the response body for now
-					res.send(body);
-				}
+			// test the token with a simple call to get current user
+			fpx.users(req.session, function(err, user) {
+				if(err) helpers.sendError(res, err);
+				else res.send(user);
 			});
 		}
 	});
