@@ -5,10 +5,12 @@
 
 // dependencies
 var express = require('express')
-  , routes = require('./routes')
-  , auth = require('./routes/auth')
   , http = require('http')
   , path = require('path')
+  , RedisStore = require('connect-redis')(express)
+  , routes = require('./routes')
+  , auth = require('./routes/auth')
+  , config = require('./config')
   , app = express();
 
 
@@ -21,6 +23,12 @@ app.configure(function(){
   app.use(express.logger('dev'));
   app.use(express.bodyParser());
   app.use(express.methodOverride());
+  app.use(express.cookieParser('some-session-cookie-secret'));
+  app.use(express.session({ 
+    secret: 'some-redis-session-store-secret',
+    store: new RedisStore({ 'host': config.redis.host, 'port': config.redis.port, 'pass': config.redis.pass }),
+    cookie: { maxAge: 3600000 }
+  }));
   app.use(app.router);
   app.use(express.static(path.join(__dirname, 'public')));
 });

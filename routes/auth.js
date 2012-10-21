@@ -11,8 +11,6 @@ var qs = require('querystring')
 ,	helpers = require('../helpers');
 
 
-var dasecret = null;
-
 ////////////////
 // GET /login //
 ////////////////
@@ -35,7 +33,8 @@ auth.index = function(req, res) {
 			,	token = params.oauth_token
 			,	secret = params.oauth_token_secret;
 
-			dasecret = secret;
+			// store the oauth token in session
+			req.session.secret = secret;
 
 			// redirect user to 500px authorize page
 			var url = 'https://api.500px.com/v1/oauth/authorize?oauth_token=' + token;
@@ -53,14 +52,15 @@ auth.index = function(req, res) {
 auth.callback = function(req, res) {
 	var query = req.query
 	,	token = query.oauth_token
-	,	verifier = query.oauth_verifier;
+	,	verifier = query.oauth_verifier
+	,	secret = req.session.secret;
 
 	var url = "https://api.500px.com/v1/oauth/access_token"
 	,	oauth = {
 			consumer_key: config.key,
 			consumer_secret: config.secret,
 			token: token,
-			token_secret: dasecret,
+			token_secret: secret,
 			verifier: verifier
 		};
 
