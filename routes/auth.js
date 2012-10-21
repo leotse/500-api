@@ -17,10 +17,30 @@ var qs = require('querystring')
 ////////////////
 // authorizes the user against 500px
 
-auth.index = function(req, res) {
+auth.login = function(req, res) {
 
-	// authorize user
-	fpx.authorize(req, res);
+	if(helpers.isLoggedIn(req)) {
+		// res.send('user already logged in!');
+		// test the token with a simple call to get current user
+		fpx.users(req.session, function(err, user) {
+			if(err) helpers.sendError(res, err);
+			else res.send(user);
+		});
+	} else {
+		fpx.authorize(req, res);
+	}	
+};
+
+
+/////////////////
+// GET /logout //
+/////////////////
+
+auth.logout = function(req, res) {
+
+	req.session.destroy();
+	res.redirect('/');
+
 };
 
 

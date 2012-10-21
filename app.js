@@ -40,9 +40,9 @@ app.configure('development', function(){
 
 // routes
 app.get('/', routes.index);
-app.get('/login', auth.index);
+app.get('/login', auth.login);
+app.get('/logout', auth.logout);
 app.get('/login/callback', auth.callback);
-app.get('/login/callback2', auth.callback2);
 
 
 // start server
